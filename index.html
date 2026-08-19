@@ -382,6 +382,28 @@
   .blink{animation:blink 1.1s steps(2,start) infinite;}
   @keyframes blink{to{visibility:hidden;}}
 
+  /* ---- wipe modal ---- */
+  .modal-back{
+    position:fixed;inset:0;z-index:80;padding:20px;
+    background:rgba(14,10,36,.55);
+    display:none;align-items:center;justify-content:center;
+  }
+  .modal-back.on{display:flex;}
+  .modal{
+    width:min(360px,100%);
+    background:var(--chrome);
+    border:1px solid #0B1E52;border-radius:8px 8px 3px 3px;
+    box-shadow:0 22px 60px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.6);
+    overflow:hidden;
+  }
+  .modal.wrong{animation:shakeit .19s ease;}
+  .modal-body{padding:16px 16px 18px;}
+  .modal-body p{font-size:12px;color:var(--ink-soft);margin:0 0 10px;line-height:1.5;}
+  .modal-body input{width:100%;margin-bottom:12px;}
+  .modal-err{color:var(--err);font-size:11px;font-weight:bold;margin:0 0 10px;display:none;}
+  .modal-err.on{display:block;}
+  .modal-row{display:flex;gap:8px;justify-content:flex-end;}
+
   @media (prefers-reduced-motion:reduce){
     .bubble.sent{animation:none;}
     .inputrow.wrong{animation:none;}
@@ -496,6 +518,25 @@
     <div class="toast-hd">Ctrl+W Messenger</div>
     <div class="toast-bd"><b id="toastName"></b> has topped the leaderboard</div>
   </div>
+
+  <div class="modal-back" id="wipeBack" role="dialog" aria-modal="true" aria-label="Enter password">
+    <div class="modal" id="wipeModal">
+      <div class="titlebar">
+        <span class="t">Enter password</span>
+        <span class="tbtn close" id="wipeX" title="Cancel">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p>Clear the whole leaderboard? This wipes it for everyone and can't be undone.</p>
+        <p class="modal-err" id="wipeErr">Wrong password.</p>
+        <input type="password" id="wipePw" autocomplete="off" autocorrect="off"
+               autocapitalize="off" spellcheck="false" aria-label="Password" placeholder="password">
+        <div class="modal-row">
+          <button class="btn" id="wipeCancel">Cancel</button>
+          <button class="btn go" id="wipeOk">Clear board</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -573,6 +614,7 @@
 
   const KEY = "ctrlw.leaderboard.v1";
   const IDLE_MS = 60000;
+  const WIPE_PW = "dialup";   // change this to whatever you want the reset password to be
 
   /* ---------------- state ---------------- */
   let rounds = [], idx = 0, target = "", started = 0, total = 0;
@@ -856,27 +898,52 @@
 
   // keep focus in the typing box while playing
   document.addEventListener("click", ()=>{
+    if($("wipeBack").classList.contains("on")) return;
     if($("s-play").classList.contains("on") && !$("typed").disabled) $("typed").focus();
   });
   document.addEventListener("mousemove", resetIdle);
 
-  // secret: click the butterfly 5x to wipe the leaderboard
+  // secret: tap the butterfly 5x to open the (password-gated) wipe
   let taps = 0, tapT = null;
   function wipe(){
     taps++;
     clearTimeout(tapT);
     tapT = setTimeout(()=>{ taps = 0; }, 1200);
-    if(taps >= 5){
-      taps = 0;
-      if(confirm("Clear the whole leaderboard?")){
-        save([]);
-        fetch(API, {method:"DELETE"}).catch(()=>{});
-        paintBoard(null);
-      }
-    }
+    if(taps >= 5){ taps = 0; openWipe(); }
   }
   $("logo").addEventListener("click", wipe);
   $("logo").addEventListener("keydown", e=>{ if(e.key === "Enter" || e.key === " ") wipe(); });
+
+  function openWipe(){
+    $("wipePw").value = "";
+    $("wipeErr").classList.remove("on");
+    $("wipeBack").classList.add("on");
+    setTimeout(()=>$("wipePw").focus(), 40);
+  }
+  function closeWipe(){ $("wipeBack").classList.remove("on"); }
+  function doWipe(){
+    if($("wipePw").value !== WIPE_PW){
+      $("wipeErr").classList.add("on");
+      const m = $("wipeModal");
+      m.classList.remove("wrong");
+      void m.offsetWidth;
+      m.classList.add("wrong");
+      $("wipePw").select();
+      return;
+    }
+    save([]);
+    fetch(API, {method:"DELETE"}).catch(()=>{});
+    paintBoard(null);
+    closeWipe();
+  }
+  $("wipeOk").addEventListener("click", doWipe);
+  $("wipeCancel").addEventListener("click", closeWipe);
+  $("wipeX").addEventListener("click", closeWipe);
+  $("wipeBack").addEventListener("click", e=>{ if(e.target === $("wipeBack")) closeWipe(); });
+  $("wipePw").addEventListener("keydown", e=>{
+    if(e.key === "Enter") doWipe();
+    else if(e.key === "Escape") closeWipe();
+  });
 
   toSignin();
 })();
