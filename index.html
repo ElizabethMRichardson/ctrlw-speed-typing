@@ -644,7 +644,7 @@
   const WIPE_PW = "dialup";   // change this to whatever you want the reset password to be
 
   /* ---------------- state ---------------- */
-  let rounds = [], idx = 0, target = "", started = 0, total = 0;
+  let rounds = [], idx = 0, target = "", runStart = 0, segStart = 0, total = 0;
   let ticking = false, raf = null, player = "AAA", idleTimer = null;
   let wasBad = false, lastShake = 0;
 
@@ -749,7 +749,9 @@
       seen.push(chosen);
       return { s: chosen.s, k: kind };
     });
-    idx = 0; total = 0;
+    idx = 0; total = 0; runStart = 0; segStart = 0;
+    stopClock();
+    $("clock").textContent = "0.00";
 
     const c = pick(CONTACTS);
     $("cn").textContent = c[0] + " says";
@@ -775,9 +777,6 @@
     $("typed").value = "";
     $("typed").disabled = false;
     $("typed").focus();
-    started = 0;
-    ticking = false;
-    $("clock").textContent = fmt(total);
     drawPips();
     render("");
   }
@@ -809,11 +808,12 @@
   }
 
   function startClock(){
-    started = performance.now();
+    runStart = performance.now();
+    segStart = runStart;
     ticking = true;
     const step = () => {
       if(!ticking) return;
-      $("clock").textContent = fmt(total + (performance.now() - started));
+      $("clock").textContent = fmt(performance.now() - runStart);
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
@@ -847,16 +847,23 @@
     $("typed").classList.toggle("err", bad);
 
     if(val === target){
-      const split = performance.now() - started;
-      total += split;
-      stopClock();
-      $("clock").textContent = fmt(total);
+      const now = performance.now();
+      const split = now - segStart;
+      segStart = now;
+      $("clock").textContent = fmt(now - runStart);
       $("typed").disabled = true;
       $("chip").innerHTML = "&#10003; sent &middot; " + fmt(split) + "s";
       $("bubble").classList.add("sent");
       idx++;
       drawPips();
-      setTimeout(()=>{ idx < rounds.length ? loadRound() : finish(); }, 850);
+      if(idx < rounds.length){
+        setTimeout(loadRound, 850);
+      } else {
+        total = now - runStart;   // stop the clock at the last message, not after the animation
+        stopClock();
+        $("clock").textContent = fmt(total);
+        setTimeout(finish, 850);
+      }
     }
   }
 
