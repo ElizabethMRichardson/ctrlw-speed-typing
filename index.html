@@ -597,6 +597,48 @@
     try{ localStorage.setItem(KEY, JSON.stringify(list)); }catch(e){}
   }
 
+  /* ---------------- cloud (best effort, local is the fallback) ---------------- */
+  const API = "/api/scores";
+
+  function merge(a, b){
+    const seen = new Set(), out = [];
+    for(const e of a.concat(b)){
+      const k = e.at + "|" + e.who + "|" + e.ms;
+      if(seen.has(k)) continue;
+      seen.add(k); out.push(e);
+    }
+    out.sort((x,y)=>x.ms-y.ms);
+    return out.slice(0,50);
+  }
+
+  // pull the cloud board, fold it into local, repaint. never throws.
+  function syncDown(mine){
+    fetch(API + "?ts=" + Date.now(), {cache:"no-store"})
+      .then(r => r.ok ? r.json() : null)
+      .then(remote => {
+        if(!Array.isArray(remote)) return;
+        save(merge(remote, load()));
+        paintBoard(mine || null);
+      })
+      .catch(()=>{});
+  }
+
+  // push one score up; fold the returned board back into local. never throws.
+  function syncUp(entry, mine){
+    fetch(API, {
+      method:"POST",
+      headers:{"content-type":"application/json"},
+      body: JSON.stringify(entry)
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(remote => {
+        if(!Array.isArray(remote)) return;
+        save(merge(remote, load()));
+        paintBoard(mine || null);
+      })
+      .catch(()=>{});
+  }
+
   let toastT = null;
   function toast(name){
     $("toastName").textContent = name;
@@ -621,6 +663,7 @@
     $("s-done").classList.remove("is-champ");
     clearTimeout(toastT);
     paintBoard(null);
+    syncDown(null);
     setTimeout(()=>$("ini").focus(), 40);
     clearTimeout(idleTimer);
   }
@@ -762,6 +805,7 @@
     save(list.slice(0,50));
 
     paintBoard(entry);
+    syncUp(entry, entry);
     show("s-done");
 
     const champ = !!(list[0] && list[0].at === entry.at);
