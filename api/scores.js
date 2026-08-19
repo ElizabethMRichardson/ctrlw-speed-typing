@@ -1,20 +1,18 @@
-import { put, list } from '@vercel/blob';
+import { put, get } from '@vercel/blob';
 
 const KEY = 'leaderboard.json';
 const MAX = 50;
 
 async function readBoard() {
-  const { blobs } = await list({ prefix: KEY, limit: 1 });
-  if (!blobs.length) return [];
-  const r = await fetch(blobs[0].url + '?ts=' + Date.now(), { cache: 'no-store' });
-  if (!r.ok) return [];
-  const data = await r.json();
+  const res = await get(KEY, { access: 'private', useCache: false });
+  if (!res || !res.stream) return [];
+  const data = await new Response(res.stream).json();
   return Array.isArray(data) ? data : [];
 }
 
 async function writeBoard(board) {
   await put(KEY, JSON.stringify(board), {
-    access: 'public',
+    access: 'private',
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true,
