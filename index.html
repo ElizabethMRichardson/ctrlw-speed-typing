@@ -868,7 +868,11 @@
     tapT = setTimeout(()=>{ taps = 0; }, 1200);
     if(taps >= 5){
       taps = 0;
-      if(confirm("Clear the whole leaderboard?")){ save([]); paintBoard(null); }
+      if(confirm("Clear the whole leaderboard?")){
+        save([]);
+        fetch(API, {method:"DELETE"}).catch(()=>{});
+        paintBoard(null);
+      }
     }
   }
   $("logo").addEventListener("click", wipe);

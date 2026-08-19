@@ -50,9 +50,13 @@ export default async function handler(req, res) {
       await writeBoard(trimmed);
       return res.status(200).json(trimmed);
     }
-    res.setHeader('Allow', 'GET, POST');
+    if (req.method === 'DELETE') {
+      await writeBoard([]);
+      return res.status(200).json([]);
+    }
+    res.setHeader('Allow', 'GET, POST, DELETE');
     return res.status(405).json({ error: 'method not allowed' });
-  } catch (e) {
-    return res.status(500).json({ error: 'server error', detail: String(e && e.message || e) });
+  } catch {
+    return res.status(500).json({ error: 'server error' });
   }
 }
