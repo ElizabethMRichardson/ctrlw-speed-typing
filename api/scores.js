@@ -18,7 +18,7 @@ async function writeBoard(board) {
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true,
-    cacheControlMaxAge: 0,
+    cacheControlMaxAge: 60,
   });
 }
 
