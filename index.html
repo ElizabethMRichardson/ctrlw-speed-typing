@@ -372,6 +372,10 @@
   }
   .tm{font-family:"Lucida Console",Consolas,monospace;font-weight:bold;}
   .empty{font-size:12px;color:var(--ink-soft);font-style:italic;padding:6px 7px;}
+  .board li.gap{
+    justify-content:center;color:var(--chrome-dark);
+    background:none;padding:1px 7px;letter-spacing:3px;
+  }
 
   .foot{
     text-align:center;font-size:10px;color:rgba(255,255,255,.45);
@@ -863,20 +867,34 @@
     resetIdle();
   }
 
+  const TOP_N = 10;
+
+  function boardRow(e, rank, mine){
+    const me = mine && e.at === mine.at ? "me" : "";
+    const who = e.who.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+    return `<li class="${me}">
+      <span class="rank">${rank}</span>
+      <span class="dot"></span>
+      <span class="who" title="${who}">${who}</span>
+      <span class="tm">${fmt(e.ms)}s</span>
+    </li>`;
+  }
+
   function paintBoard(mine){
     const list = load();
-    const rows = list.length
-      ? list.slice(0,10).map((e,i)=>{
-          const me = mine && e.at === mine.at ? "me" : "";
-          const who = e.who.replace(/&/g,"&amp;").replace(/</g,"&lt;");
-          return `<li class="${me}">
-            <span class="rank">${i+1}</span>
-            <span class="dot"></span>
-            <span class="who" title="${who}">${who}</span>
-            <span class="tm">${fmt(e.ms)}s</span>
-          </li>`;
-        }).join("")
-      : '<li class="empty">Nobody online yet.</li>';
+    let rows;
+    if(!list.length){
+      rows = '<li class="empty">Nobody online yet.</li>';
+    } else {
+      rows = list.slice(0,TOP_N).map((e,i)=>boardRow(e, i+1, mine)).join("");
+      // finished outside the top 10? tack their real placing on so they see where they landed
+      if(mine){
+        const rank = list.findIndex(e => e.at === mine.at);
+        if(rank >= TOP_N){
+          rows += `<li class="gap" aria-hidden="true">&middot; &middot; &middot;</li>` + boardRow(list[rank], rank+1, mine);
+        }
+      }
+    }
 
     ["board","boardIn"].forEach(id => { if($(id)) $(id).innerHTML = rows; });
     ["count","countIn"].forEach(id => { if($(id)) $(id).textContent = list.length; });
