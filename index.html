@@ -900,14 +900,32 @@
   const TOP_N = 10;
 
   // green at the top of the board, fading through orange to red as rank drops
-  function rankColor(rank){
+  function rankHue(rank){
     const t = Math.min(1, Math.max(0, (rank - 1) / (TOP_N - 1)));
-    return `hsl(${Math.round(120 * (1 - t))}, 78%, 44%)`;
+    return Math.round(120 * (1 - t));
   }
-  function buddy(color){
-    return `<svg class="dot" viewBox="0 0 24 24" style="color:${color}" aria-hidden="true">
-      <circle cx="12" cy="7.6" r="4.4" fill="currentColor"/>
-      <path d="M3.4 21c0-5 4.3-7.7 8.6-7.7s8.6 2.7 8.6 7.7z" fill="currentColor"/>
+  let buddyUid = 0;
+  function buddy(hue){
+    const uid = ++buddyUid;
+    const light = `hsl(${hue},90%,64%)`;
+    const base  = `hsl(${hue},82%,45%)`;
+    const dark  = `hsl(${hue},80%,31%)`;
+    return `<svg class="dot" viewBox="0 0 24 24" aria-hidden="true">
+      <defs>
+        <linearGradient id="bg${uid}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="${light}"/>
+          <stop offset=".55" stop-color="${base}"/>
+          <stop offset="1" stop-color="${dark}"/>
+        </linearGradient>
+        <radialGradient id="bh${uid}" cx=".38" cy=".28" r=".55">
+          <stop offset="0" stop-color="#fff" stop-opacity=".95"/>
+          <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle cx="12" cy="7.6" r="4.5" fill="url(#bg${uid})" stroke="${dark}" stroke-width=".5"/>
+      <path d="M3.3 21c0-5 4.4-7.8 8.7-7.8s8.7 2.8 8.7 7.8z" fill="url(#bg${uid})" stroke="${dark}" stroke-width=".5"/>
+      <ellipse cx="10.3" cy="5.9" rx="2.2" ry="1.6" fill="url(#bh${uid})"/>
+      <ellipse cx="8.6" cy="16.3" rx="2.2" ry="3" fill="#fff" opacity=".18"/>
     </svg>`;
   }
 
@@ -916,7 +934,7 @@
     const who = e.who.replace(/&/g,"&amp;").replace(/</g,"&lt;");
     return `<li class="${me}">
       <span class="rank">${rank}</span>
-      ${buddy(rankColor(rank))}
+      ${buddy(rankHue(rank))}
       <span class="who" title="${who}">${who}</span>
       <span class="tm">${fmt(e.ms)}s</span>
     </li>`;
