@@ -12,9 +12,12 @@
     --chrome:#ECE9D8;
     --chrome-dark:#ACA899;
     --chrome-light:#FFFFFF;
-    --pink:#FF3F9E;
-    --bg-1:#2A1147;
-    --bg-2:#0E0A24;
+    --pink:#EA63CF;
+    --pink-lite:#FDA8FC;
+    --purple:#A579E4;
+    --purple-lite:#C9AEF2;
+    --bg-1:#281A54;
+    --bg-2:#0D0A28;
     --ink:#16161D;
     --ink-soft:#5A5A66;
     --err:#D8003C;
@@ -27,8 +30,8 @@
     margin:0;
     font-family:Tahoma,Verdana,Geneva,sans-serif;
     background:
-      radial-gradient(circle at 20% 15%, rgba(255,63,158,.22), transparent 45%),
-      radial-gradient(circle at 82% 78%, rgba(123,192,67,.18), transparent 45%),
+      radial-gradient(circle at 20% 15%, rgba(234,99,207,.24), transparent 45%),
+      radial-gradient(circle at 82% 78%, rgba(165,121,228,.22), transparent 48%),
       linear-gradient(155deg, var(--bg-1), var(--bg-2));
     min-height:100%;
     display:flex;
@@ -101,7 +104,7 @@
   .avatar{
     width:44px;height:44px;flex:none;border-radius:3px;
     border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);
-    background:linear-gradient(135deg,var(--pink),#7A3FD6);
+    background:linear-gradient(135deg,var(--pink),var(--purple));
     display:flex;align-items:center;justify-content:center;
     color:#fff;font-weight:bold;font-size:17px;
   }
@@ -226,10 +229,10 @@
   .btn:hover{background:linear-gradient(180deg,#FFFFFF,#EAF2FF 45%,#C8DBF6);}
   .btn:active{border-style:inset;}
   .btn.go{
-    background:linear-gradient(180deg,#FF87C4,#FF3F9E 55%,#D21F76);
-    border-color:#A81660;color:#fff;
+    background:linear-gradient(180deg,#FFA6EC,#EA63CF 48%,#A85FD8);
+    border-color:#8E45C4;color:#fff;
   }
-  .btn.go:hover{background:linear-gradient(180deg,#FFA0D2,#FF54A9 55%,#E02A85);}
+  .btn.go:hover{background:linear-gradient(180deg,#FFB8F0,#EE78D6 48%,#B06FE0);}
   .btn:focus-visible, .butterfly:focus-visible, input:focus-visible{
     outline:2px solid var(--pink);outline-offset:2px;
   }
