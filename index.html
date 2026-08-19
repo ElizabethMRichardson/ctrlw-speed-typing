@@ -619,11 +619,22 @@
   ];
 
   const VERDICTS = [
-    [35,  "Suspiciously fast. Were you actually there?"],
-    [50,  "Genuine MSN veteran behaviour."],
-    [70,  "Solid. Your thumbs remember."],
-    [95,  "A bit rusty, but the spirit is willing."],
-    [9999,"You have clearly never been grounded."]
+    [25,  ["You typed that like your mum was about to pick up the phone.",
+           "That was not humanly possible. Respect."]],
+    [32,  ["Suspiciously fast. Were you actually there?",
+           "Your thumbs have muscle memory from 2003."]],
+    [40,  ["Genuine MSN veteran behaviour.",
+           "You definitely had a Bebo top friends drama."]],
+    [48,  ["Fast. Your thumbs never forgot.",
+           "Sharp. You logged some serious dial-up hours."]],
+    [58,  ["Solid. Your thumbs remember.",
+           "Not bad. The landline is proud."]],
+    [70,  ["Respectable. A bit long on the family PC.",
+           "Decent. You paused to check your Myspace top 8."]],
+    [85,  ["A bit rusty, but the spirit is willing.",
+           "The dial-up is buffering somewhere in your fingers."]],
+    [9999,["You have clearly never been grounded.",
+           "Somewhere, a Nokia 3310 is disappointed."]]
   ];
 
   const KEY = "ctrlw.leaderboard.v1";
@@ -852,7 +863,7 @@
     const secs = total/1000;
     $("final").textContent = secs.toFixed(2);
     $("whoami").textContent = player;
-    $("verdict").textContent = VERDICTS.find(v => secs < v[0])[1];
+    $("verdict").textContent = pick(VERDICTS.find(v => secs < v[0])[1]);
 
     const list = load();
     const entry = { who: player, ms: Math.round(total), at: Date.now() };
