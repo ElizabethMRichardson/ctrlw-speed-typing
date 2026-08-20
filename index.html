@@ -451,10 +451,10 @@
         </div>
         <div class="signin-grid">
           <div class="col-in">
-            <div class="prompt">Sign in</div>
+            <div class="prompt">Enter yr full name</div>
             <input type="text" id="ini" class="fullname" maxlength="28" placeholder="Your name"
                    autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
-                   aria-label="Your name">
+                   aria-label="Your full name">
             <button class="btn go wide" id="start">Sign in</button>
             <p class="hint">
               Six messages fly in. Type each one back <b>exactly</b> as written.<br>
@@ -589,7 +589,7 @@
       {s:"DROP TABLE homework;"},
       {s:".crush { float: right; }"},
       {s:".butterfly { animation: flutter; }"},
-      {s:"sudo make me a sandwich"},
+      {s:"sudo systemctl start vibes"},
       {s:"npm install girlfriend"},
       {s:"npm install boyfriend"},
       {s:"git commit -m 'plz work'"},
@@ -623,6 +623,12 @@
     ["MeGaN_x0","downloading 1 song since 3pm"],
     ["·.¸¸.· LuCy ·.¸¸.·","brb msn keeps freezing"],
     ["star_gurl_88","which spice girl r u quiz"]
+  ];
+
+  // Placeholder only — real name still works fine.
+  const NAME_HINTS = [
+    "xX_ur_NaMe_Xx", "~*~ ur name ~*~", "·°·~ ur name ~·°·", "+*+ Ur NaMe +*+",
+    "xoxo ur name xoxo", "-=UrNaMe=-", "·´¯`·. ur name .·´¯`·", "ur_name_x0"
   ];
 
   const VERDICTS = [
@@ -733,6 +739,7 @@
     stopClock();
     show("s-signin");
     $("ini").value = "";
+    $("ini").placeholder = pick(NAME_HINTS);
     $("wintitle").textContent = "Ctrl+W Messenger";
     $("toast").classList.remove("up");
     $("s-done").classList.remove("is-champ");
