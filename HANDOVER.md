@@ -43,8 +43,9 @@ There's a live leaderboard.
 - Row icons are glossy MSN "buddy" SVGs, coloured **green (#1) → orange → red (#10)** by rank.
 
 ## Content pools (all in `index.html`)
-- `POOLS` = `{ txt, caps, user, code }`, `CONTACTS`, `VERDICTS` (8 time bands, 2–3 random
-  lines each).
+- `POOLS` = `{ txt, caps, user, code }`, `CONTACTS`, `VERDICTS` (cohort-rank bands
+  `solo/top/high/mid/low`, 2–3 random lines each; the end-screen verdict + placing line are
+  based on where you land in the field so far, not your absolute time).
 - **Hard constraint on any text the player TYPES:** only characters that are identical on
   UK and US keyboards. **No `"` (double quote), `@`, `#`, or backticks** — those move between
   layouts. Single quotes are fine. Keep this rule if you add/edit `POOLS` phrases (esp. `code`).

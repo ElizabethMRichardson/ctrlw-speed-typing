@@ -280,6 +280,15 @@
   .tag b{color:var(--pink);}
   .prompt{font-size:13px;font-weight:bold;margin-bottom:10px;}
   .hint{font-size:11px;color:var(--ink-soft);margin-top:14px;line-height:1.7;}
+  .rules{list-style:none;margin:16px 0 0;padding:0;counter-reset:rule;
+    display:flex;flex-direction:column;gap:11px;}
+  .rules li{position:relative;padding-left:30px;font-size:12px;line-height:1.5;
+    color:var(--ink-soft);counter-increment:rule;}
+  .rules li::before{content:counter(rule);position:absolute;left:0;top:-1px;
+    width:20px;height:20px;border-radius:50%;background:var(--pink);
+    color:#fff;font-size:11px;font-weight:bold;
+    display:flex;align-items:center;justify-content:center;}
+  .rules .prize{color:var(--pink);}
   .center{display:flex;flex-direction:column;align-items:center;}
 
   /* ---- results ---- */
@@ -344,6 +353,7 @@
   .toast-bd{color:var(--ink);line-height:1.45;}
   .toast-bd b{color:var(--xp-blue);}
   .score-cap{font-size:12px;color:var(--ink-soft);margin-top:6px;}
+  .placing{font-size:15px;font-weight:bold;color:var(--purple-lite);margin-top:10px;text-align:center;}
   .verdict{
     font-size:14px;font-weight:bold;color:var(--pink);
     margin:14px 0 4px;text-align:center;
@@ -456,11 +466,11 @@
                    autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
                    aria-label="Your full name">
             <button class="btn go wide" id="start">Sign in</button>
-            <p class="hint">
-              Six messages fly in. Type each one back <b>exactly</b> as written.<br>
-              A message only sends once every character matches, and you can't move on till it does.<br>
-              The timer starts on your first keystroke. <b>Fastest total time at the end of the night wins a Kodak digicam.</b>
-            </p>
+            <ol class="rules">
+              <li>Type each message back <b>exactly</b> as written. A message only sends once every character matches, and you can't move on till it does.</li>
+              <li>Timer starts on your first keystroke.</li>
+              <li><b class="prize">Fastest total time at the end of the night wins a Kodak digicam.</b></li>
+            </ol>
           </div>
           <div class="col-board">
             <div class="board flush">
@@ -510,6 +520,7 @@
             <div class="score-big" id="final">0.00</div>
           </div>
           <div class="score-cap">seconds &middot; <span id="whoami">&mdash;</span></div>
+          <div class="placing" id="placing"></div>
           <div class="crown">&#9733; NEW HIGH SCORE &#9733;</div>
           <div class="verdict" id="verdict"></div>
           <button class="btn go" id="again" style="margin-top:10px">Next player</button>
@@ -631,25 +642,40 @@
     "xoxo ur name xoxo", "-=UrNaMe=-", "·´¯`·. ur name .·´¯`·", "ur_name_x0"
   ];
 
-  const VERDICTS = [
-    [25,  ["You typed that like your mum was about to pick up the phone.",
-           "That was not humanly possible. Respect."]],
-    [32,  ["Suspiciously fast. Were you actually there?",
-           "Your thumbs have muscle memory from 2003."]],
-    [40,  ["Genuine MSN veteran behaviour.",
-           "You definitely had a Bebo top friends drama."]],
-    [48,  ["Fast. Your thumbs never forgot.",
-           "Sharp. You logged some serious dial-up hours."]],
-    [58,  ["Solid. Your thumbs remember.",
-           "Not bad. The landline is proud."]],
-    [70,  ["Respectable. A bit long on the family PC.",
-           "Decent. You paused to check your Myspace top 8."]],
-    [85,  ["A bit rusty, but the spirit is willing.",
-           "The dial-up is buffering somewhere in your fingers.",
-           "You stopped to fight your brother for the computer, didn't you?"]],
-    [9999,["You have clearly never been grounded.",
-           "Somewhere, a Nokia 3310 is disappointed."]]
-  ];
+  // Cohort-relative verdicts, keyed by where you land in the field so far.
+  const VERDICTS = {
+    solo: ["First one on the board. The bar is yours to set.",
+           "Nobody to beat yet. Set the pace."],
+    top:  ["Fastest fingers in the building.",
+           "Top of the board. Everyone else is still buffering."],
+    high: ["Comfortably ahead of the pack.",
+           "Sharp. You logged some serious dial-up hours."],
+    mid:  ["Right in the thick of it.",
+           "Solidly mid-table. Genuine MSN veteran energy."],
+    low:  ["The dial-up is buffering somewhere in your fingers.",
+           "You stopped to fight your brother for the PC, didn't you?",
+           "Plenty of room to climb before the night's out."]
+  };
+
+  const ordinal = n => {
+    const s = ["th","st","nd","rd"], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+
+  // Rank is 1 = fastest. Returns the placing line + which verdict band to draw from.
+  function cohortVerdict(rank, total){
+    if(total <= 1) return { line: "First on the board tonight", band: "solo" };
+    const placing = rank === 1
+      ? `Fastest of ${total} tonight`
+      : `${ordinal(rank)} fastest of ${total} tonight`;
+    let band;
+    if(rank === 1) band = "top";
+    else {
+      const f = (rank - 1) / (total - 1);
+      band = f <= 1/3 ? "high" : f <= 2/3 ? "mid" : "low";
+    }
+    return { line: placing, band };
+  }
 
   const KEY = "ctrlw.leaderboard.v1";
   const IDLE_MS = 60000;
@@ -885,13 +911,17 @@
     const secs = total/1000;
     $("final").textContent = secs.toFixed(2);
     $("whoami").textContent = player;
-    $("verdict").textContent = pick(VERDICTS.find(v => secs < v[0])[1]);
 
     const list = load();
     const entry = { who: player, ms: Math.round(total), at: Date.now() };
     list.push(entry);
     list.sort((a,b)=>a.ms-b.ms);
     save(list.slice(0,50));
+
+    const rank = list.findIndex(e => e.at === entry.at) + 1;
+    const { line, band } = cohortVerdict(rank, list.length);
+    $("placing").textContent = line;
+    $("verdict").textContent = pick(VERDICTS[band]);
 
     paintBoard(entry);
     syncUp(entry, entry);
