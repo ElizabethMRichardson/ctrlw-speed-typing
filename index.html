@@ -353,7 +353,6 @@
   .toast-bd{color:var(--ink);line-height:1.45;}
   .toast-bd b{color:var(--xp-blue);}
   .score-cap{font-size:12px;color:var(--ink-soft);margin-top:6px;}
-  .placing{font-size:15px;font-weight:bold;color:var(--purple-lite);margin-top:10px;text-align:center;}
   .verdict{
     font-size:14px;font-weight:bold;color:var(--pink);
     margin:14px 0 4px;text-align:center;
@@ -520,7 +519,6 @@
             <div class="score-big" id="final">0.00</div>
           </div>
           <div class="score-cap">seconds &middot; <span id="whoami">&mdash;</span></div>
-          <div class="placing" id="placing"></div>
           <div class="crown">&#9733; NEW HIGH SCORE &#9733;</div>
           <div class="verdict" id="verdict"></div>
           <button class="btn go" id="again" style="margin-top:10px">Next player</button>
@@ -644,37 +642,28 @@
 
   // Cohort-relative verdicts, keyed by where you land in the field so far.
   const VERDICTS = {
-    solo: ["First one on the board. The bar is yours to set.",
-           "Nobody to beat yet. Set the pace."],
-    top:  ["Fastest fingers in the building.",
+    solo: ["First one online tonight. Warm up the dial-up.",
+           "Nobody to beat yet. The landline is watching."],
+    top:  ["You typed that like your mum was about to pick up the phone.",
+           "Fastest fingers on the family PC.",
            "Top of the board. Everyone else is still buffering."],
-    high: ["Comfortably ahead of the pack.",
-           "Sharp. You logged some serious dial-up hours."],
-    mid:  ["Right in the thick of it.",
-           "Solidly mid-table. Genuine MSN veteran energy."],
-    low:  ["The dial-up is buffering somewhere in your fingers.",
-           "You stopped to fight your brother for the PC, didn't you?",
-           "Plenty of room to climb before the night's out."]
+    high: ["Genuine MSN veteran behaviour.",
+           "Your thumbs have muscle memory from 2003.",
+           "You logged some serious dial-up hours."],
+    mid:  ["You paused to check your Myspace top 8, didn't you?",
+           "Not bad. The landline is proud.",
+           "Solid, but a bit long on the family PC."],
+    low:  ["Somewhere, a Nokia 3310 is disappointed.",
+           "The dial-up is buffering somewhere in your fingers.",
+           "You stopped to fight your brother for the PC, didn't you?"]
   };
 
-  const ordinal = n => {
-    const s = ["th","st","nd","rd"], v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-  };
-
-  // Rank is 1 = fastest. Returns the placing line + which verdict band to draw from.
+  // Rank is 1 = fastest. Picks a verdict band from where you land in the field so far.
   function cohortVerdict(rank, total){
-    if(total <= 1) return { line: "First on the board tonight", band: "solo" };
-    const placing = rank === 1
-      ? `Fastest of ${total} tonight`
-      : `${ordinal(rank)} fastest of ${total} tonight`;
-    let band;
-    if(rank === 1) band = "top";
-    else {
-      const f = (rank - 1) / (total - 1);
-      band = f <= 1/3 ? "high" : f <= 2/3 ? "mid" : "low";
-    }
-    return { line: placing, band };
+    if(total <= 1) return "solo";
+    if(rank === 1) return "top";
+    const f = (rank - 1) / (total - 1);
+    return f <= 1/3 ? "high" : f <= 2/3 ? "mid" : "low";
   }
 
   const KEY = "ctrlw.leaderboard.v1";
@@ -919,9 +908,7 @@
     save(list.slice(0,50));
 
     const rank = list.findIndex(e => e.at === entry.at) + 1;
-    const { line, band } = cohortVerdict(rank, list.length);
-    $("placing").textContent = line;
-    $("verdict").textContent = pick(VERDICTS[band]);
+    $("verdict").textContent = pick(VERDICTS[cohortVerdict(rank, list.length)]);
 
     paintBoard(entry);
     syncUp(entry, entry);
