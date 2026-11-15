@@ -4,6 +4,7 @@ import { put, get } from '@vercel/blob';
 const BOARDS = {
   y2k: 'leaderboard.json',
   xmas: 'leaderboard-xmas.json',
+  lights: 'leaderboard-lights.json',
 };
 const MAX = 50;
 

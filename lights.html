@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Untangle the Fairy Lights</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Courier+Prime:wght@400;700&family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Nunito:wght@400;700;800&display=swap">
+<style>
+  :root{
+    --red:#C8323F; --red-dk:#8E2330; --green:#2F6B4F; --green-lt:#3E8A5E; --gold:#E2A93B;
+    --cream:#FBF5EA; --paper:#FFFEFA; --line:#E6D6BB; --ink:#3A271B; --soft:#8A7260;
+    --sans:"Nunito",ui-rounded,"Segoe UI",system-ui,sans-serif;
+    --serif:"Fraunces",Georgia,serif;
+    --script:"Caveat","Bradley Hand",cursive;
+    --mono:"Courier Prime","Courier New",monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;font-family:var(--sans);color:var(--ink);
+    background:
+      radial-gradient(ellipse 90% 55% at 50% 118%, rgba(255,148,58,.42), transparent 70%),
+      linear-gradient(180deg,#0C211B 0%, #102A20 55%, #1E1A14 100%);
+    display:flex;padding:24px 16px;overflow-y:auto;
+  }
+  .wrap{width:min(1180px,100%);margin:auto;}
+  .card{background:var(--cream);border-radius:22px;overflow:hidden;
+    box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 90px rgba(255,160,70,.18);}
+  .band{
+    height:46px;display:flex;align-items:center;justify-content:center;
+    background-color:#A82634;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='46'%3E%3Cg fill='%23F7ECD8'%3E%3Crect x='0' y='3' width='3' height='3'/%3E%3Crect x='3' y='6' width='3' height='3'/%3E%3Crect x='6' y='9' width='3' height='3'/%3E%3Crect x='9' y='6' width='3' height='3'/%3E%3Crect x='12' y='3' width='3' height='3'/%3E%3Crect x='15' y='6' width='3' height='3'/%3E%3Crect x='18' y='9' width='3' height='3'/%3E%3Crect x='21' y='6' width='3' height='3'/%3E%3Crect x='10.5' y='19' width='3' height='3'/%3E%3Crect x='7.5' y='22' width='3' height='3'/%3E%3Crect x='13.5' y='22' width='3' height='3'/%3E%3Crect x='10.5' y='25' width='3' height='3'/%3E%3Crect x='0' y='40' width='3' height='3'/%3E%3Crect x='3' y='37' width='3' height='3'/%3E%3Crect x='6' y='34' width='3' height='3'/%3E%3Crect x='9' y='37' width='3' height='3'/%3E%3Crect x='12' y='40' width='3' height='3'/%3E%3Crect x='15' y='37' width='3' height='3'/%3E%3Crect x='18' y='34' width='3' height='3'/%3E%3Crect x='21' y='37' width='3' height='3'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat:repeat-x;background-position:center;
+  }
+  .band .t{background:var(--cream);color:var(--red-dk);font-family:var(--serif);font-weight:700;font-size:14px;
+    padding:5px 16px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.15);}
+  .body{padding:20px 24px 24px;}
+  .screen{display:none;}
+  .screen.on{display:block;}
+
+  h1{font-family:var(--serif);font-weight:800;font-size:clamp(30px,5vw,42px);margin:0;color:var(--red-dk);text-align:center;}
+  .kicker{font-family:var(--script);font-size:28px;color:var(--red);text-align:center;margin:0 0 -4px;transform:rotate(-3deg);}
+  .lede{text-align:center;color:var(--soft);font-size:15px;margin:10px auto 20px;max-width:560px;line-height:1.55;}
+  .lede b{color:var(--ink);}
+  .center{text-align:center;}
+  .btn{font-family:var(--sans);font-weight:800;font-size:15px;border:none;border-radius:999px;cursor:pointer;
+    padding:12px 28px;background:linear-gradient(180deg,#D8434F,#C8323F);color:#FFF6EA;box-shadow:0 3px 0 var(--red-dk);}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--red-dk);}
+  .signin{display:flex;gap:10px;max-width:440px;margin:0 auto;}
+  .signin input, .modal input{
+    flex:1;min-width:0;font-family:var(--sans);font-weight:700;font-size:17px;color:var(--ink);
+    padding:12px 16px;border:2px solid var(--line);border-radius:999px;background:var(--paper);outline:none;}
+  .signin input:focus, .modal input:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(47,107,79,.15);}
+  .btn.ghost{background:#F1E6D2;color:var(--ink);box-shadow:0 3px 0 #D8C29C;}
+
+  /* the nice list (leaderboard) */
+  .nl{max-width:520px;margin:22px auto 0;}
+  .nl h3{font-family:var(--serif);font-size:16px;margin:0 0 8px;}
+  .nl ol{list-style:none;margin:0;padding:0;}
+  .nl li{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:10px;font-size:14px;}
+  .nl li:nth-child(odd){background:#F4EBDB;}
+  .nl li.me{background:rgba(200,50,63,.12);box-shadow:inset 0 0 0 1.5px var(--red);}
+  .nl .rk{width:20px;text-align:right;font-weight:800;color:var(--soft);font-size:12px;}
+  .nl .nm{flex:1;min-width:0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .nl .tm{font-family:var(--mono);font-weight:700;color:var(--red-dk);}
+  .nl .bb{width:12px;height:12px;border-radius:50%;flex:none;}
+  .nl li.gap{justify-content:center;background:none;color:var(--soft);letter-spacing:3px;padding:0;}
+  .nl .empty{color:var(--soft);font-style:italic;}
+  .place{text-align:center;font-size:14px;color:var(--soft);margin-top:6px;}
+  .place b{color:var(--ink);}
+
+  /* secret reset */
+  .modal-back{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(8,16,12,.6);}
+  .modal-back.on{display:flex;}
+  .modal{width:min(380px,100%);background:var(--cream);border-radius:18px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.5);}
+  .modal p{font-size:14px;margin:0 0 12px;line-height:1.5;}
+  .modal input{width:100%;margin-bottom:14px;}
+  .modal-err{color:var(--red);font-weight:800;display:none;}
+  .modal-err.on{display:block;}
+  .modal-row{display:flex;gap:10px;justify-content:flex-end;}
+
+  /* ---------- play ---------- */
+  .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px;flex-wrap:wrap;}
+  .lvl{font-family:var(--serif);font-weight:700;font-size:18px;}
+  .lvl small{font-family:var(--sans);font-weight:700;font-size:13px;color:var(--soft);margin-left:6px;}
+  .hud-r{display:flex;align-items:center;gap:16px;}
+  .open{font-size:14px;color:var(--soft);display:flex;align-items:center;gap:7px;}
+  .open b{color:var(--red);font-family:var(--mono);font-size:17px;}
+  .open .led{width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 0 0 rgba(200,50,63,.6);animation:ping 1.4s infinite;}
+  .open.done b{color:var(--green);}
+  .open.done .led{background:var(--green-lt);animation:none;}
+  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(200,50,63,.55);}100%{box-shadow:0 0 0 9px rgba(200,50,63,0);}}
+  .clock{font-family:var(--serif);font-weight:800;font-size:30px;color:var(--red-dk);display:flex;align-items:baseline;}
+  .clock .cd{display:inline-block;width:.62em;text-align:center;}
+  .clock .dot{width:.28em;}
+  .clock .hs{font-size:.62em;color:var(--soft);}
+
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:stretch;}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr;} .chan{height:200px;} }
+
+  .board{position:relative;border-radius:18px;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 30%, #1D3A2E, #0F2219 80%);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.25), inset 0 0 60px rgba(0,0,0,.35);}
+  svg.lights{display:block;width:100%;height:auto;touch-action:none;user-select:none;}
+  .wire{stroke:#B89F72;stroke-width:4;stroke-linecap:round;transition:stroke .15s ease;}
+  .wire.x{stroke:#FF6B6B;stroke-width:4.5;}
+  .wire.win{stroke:#E8D29A;}
+  .bulb{cursor:grab;}
+  .bulb.drag{cursor:grabbing;}
+  .bulb .glow{opacity:0;transition:opacity .25s ease;}
+  .bulb.lit .glow{opacity:.85;}
+  .bulb.twinkle .glow{animation:twinkle 1.4s ease-in-out infinite;animation-delay:var(--d);}
+  @keyframes twinkle{0%,100%{opacity:.95;}50%{opacity:.35;}}
+  .svc{font-family:var(--mono);font-size:17px;font-weight:700;fill:#F4EAD6;
+    paint-order:stroke;stroke:#0F2219;stroke-width:5px;stroke-linejoin:round;pointer-events:none;}
+  .bulb:not(.lit) .svc{fill:#FFB3AD;}
+
+  /* the incident channel */
+  .chan{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;min-height:0;}
+  .chan-in{position:absolute;inset:0;display:flex;flex-direction:column;}
+  .chan-hd{padding:11px 14px;border-bottom:1px solid var(--line);font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px;}
+  .chan-hd .hash{color:var(--soft);font-weight:700;}
+  .chan-hd .sev{margin-left:auto;font-size:11px;font-weight:800;color:#fff;background:var(--red);border-radius:999px;padding:2px 8px;}
+  .chan-hd .sev.ok{background:var(--green-lt);}
+  .feed{flex:1;overflow-y:auto;padding:8px 12px 12px;scroll-behavior:smooth;}
+  .msg{display:flex;gap:9px;padding:7px 0;animation:msgin .25s ease-out;}
+  @keyframes msgin{0%{opacity:0;transform:translateY(6px);}100%{opacity:1;transform:none;}}
+  .msg .av{width:28px;height:28px;flex:none;border-radius:8px;background:#F4EBDB;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .msg .who{font-weight:800;font-size:13px;}
+  .msg .when{font-family:var(--mono);font-size:11px;color:var(--soft);margin-left:5px;font-weight:400;}
+  .msg .txt{font-size:13px;line-height:1.4;color:var(--ink);word-break:break-word;}
+  .msg .txt code{font-family:var(--mono);font-size:12px;background:#F4EBDB;border-radius:4px;padding:0 4px;}
+  .msg .txt .r{color:var(--red);font-weight:800;}
+  .msg .txt .g{color:var(--green);font-weight:800;}
+  .msg .txt .ln{display:block;padding:1px 0;}
+  .msg .txt .open-n{color:var(--soft);font-family:var(--mono);font-size:12px;}
+
+  .hint{font-size:13px;color:var(--soft);text-align:center;margin-top:10px;}
+
+  /* the page you ack at the start of each string */
+  .page{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;
+    background:rgba(8,16,12,.55);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:2;}
+  .page.on{opacity:1;pointer-events:auto;}
+  .page-card{width:min(400px,100%);background:var(--paper);border-radius:18px;overflow:hidden;
+    box-shadow:0 0 0 3px rgba(200,50,63,.55), 0 20px 50px rgba(0,0,0,.55);}
+  .page.on .page-card{animation:buzz 1.6s ease-in-out infinite;}
+  @keyframes buzz{
+    0%,62%,100%{transform:none;}
+    66%{transform:translateX(-5px) rotate(-1deg);} 70%{transform:translateX(5px) rotate(1deg);}
+    74%{transform:translateX(-4px) rotate(-.6deg);} 78%{transform:translateX(4px) rotate(.6deg);} 82%{transform:none;}
+  }
+  .page-strip{display:flex;align-items:center;gap:8px;background:var(--red);color:#FFF6EA;
+    font-size:12px;font-weight:800;letter-spacing:.8px;padding:9px 14px;}
+  .page-led{width:9px;height:9px;border-radius:50%;background:#FFE3A3;box-shadow:0 0 8px #FFE3A3;animation:blinkled .8s steps(2,start) infinite;}
+  @keyframes blinkled{to{visibility:hidden;}}
+  .page-from{margin-left:auto;font-weight:700;letter-spacing:0;opacity:.85;}
+  .page-body{padding:16px 18px 18px;text-align:center;}
+  .page-title{font-family:var(--serif);font-weight:800;font-size:24px;color:var(--red-dk);}
+  .page-desc{font-size:15px;margin-top:4px;}
+  .page-stat{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--red);margin:10px 0 14px;}
+  .btn.ack{width:100%;padding:13px;font-size:16px;background:linear-gradient(180deg,#56A275,#3E8A5E);box-shadow:0 3px 0 #24543C;}
+  .btn.ack:active{box-shadow:0 1px 0 #24543C;}
+  .page-hint{font-size:12px;color:var(--soft);margin-top:9px;}
+  @media (prefers-reduced-motion:reduce){ .page.on .page-card, .page-led{animation:none;} }
+
+  /* status page card when a string is solved */
+  .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:rgba(8,16,12,.4);opacity:0;pointer-events:none;transition:opacity .4s ease;padding:16px;}
+  .overlay.on{opacity:1;pointer-events:auto;}
+  .status{background:var(--paper);border-radius:18px;padding:18px 22px 20px;width:min(380px,100%);
+    box-shadow:0 20px 50px rgba(0,0,0,.5);transform:scale(.88);transition:transform .4s cubic-bezier(.2,1.4,.4,1);}
+  .overlay.on .status{transform:scale(1);}
+  .st-hd{font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--soft);}
+  .st-big{display:flex;align-items:center;gap:9px;margin:6px 0 12px;font-family:var(--serif);font-weight:800;font-size:22px;color:var(--green);}
+  .st-big i{width:14px;height:14px;border-radius:50%;background:var(--green-lt);box-shadow:0 0 0 4px rgba(62,138,94,.2);}
+  .st-list{list-style:none;margin:0 0 14px;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .st-list li{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-size:13px;border-top:1px solid var(--line);}
+  .st-list li:first-child{border-top:none;}
+  .st-list code{font-family:var(--mono);font-size:12.5px;}
+  .st-list .st{font-weight:800;font-size:12px;color:var(--soft);}
+  .st-list .st.ok{color:var(--green);}
+  .st-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .st-foot span{font-family:var(--mono);font-size:13px;color:var(--soft);}
+
+  /* postmortem */
+  .pm{max-width:640px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px 26px;}
+  .pm-kick{font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--soft);}
+  .pm h2{font-family:var(--serif);font-weight:800;font-size:26px;margin:4px 0 14px;color:var(--red-dk);}
+  .pm-row{display:grid;grid-template-columns:150px 1fr;gap:10px;padding:8px 0;border-top:1px dashed var(--line);font-size:14px;}
+  .pm-row:first-of-type{border-top:none;}
+  .pm-row dt{font-weight:800;color:var(--soft);}
+  .pm-row dd{margin:0;}
+  .pm-row .big{font-family:var(--serif);font-weight:800;font-size:28px;color:var(--red-dk);line-height:1;}
+  .pm-row ul{margin:0;padding-left:18px;}
+  .pm-row li{margin:2px 0;}
+  .verdict{font-family:var(--serif);font-size:18px;color:var(--red);text-align:center;margin:16px 0 0;font-weight:700;}
+  @media (max-width:560px){ .pm-row{grid-template-columns:1fr;gap:2px;} }
+
+  .foot{text-align:center;font-size:12px;color:rgba(255,236,210,.6);margin-top:14px;}
+  .foot a{color:rgba(255,236,210,.85);}
+  @media (prefers-reduced-motion:reduce){ .bulb.twinkle .glow, .msg, .open .led{animation:none;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="band"><span class="t" id="logo" role="button" tabindex="0">Untangle the Fairy Lights</span></div>
+    <div class="body">
+
+      <section class="screen on" id="s-start">
+        <p class="kicker">it's Christmas Eve and you're on call</p>
+        <h1>Untangle the Fairy Lights</h1>
+        <p class="lede">Someone packed the North Pole's fairy lights away last year, and they're also its
+          <b>service dependency map</b>. Every crossed wire is an open incident.
+          Drag the services around until <b>no wires cross</b> and every incident is resolved.
+          Four strings, each knottier than the last. Fastest total time wins.</p>
+        <div class="center">
+          <div class="signin">
+            <input type="text" id="who" maxlength="28" placeholder="Your name" autocomplete="off"
+                   autocorrect="off" spellcheck="false" aria-label="Your name">
+            <button class="btn" id="start">Go on call</button>
+          </div>
+        </div>
+        <div class="nl">
+          <h3>The nice list (<span id="countIn">0</span>)</h3>
+          <ol id="boardIn"></ol>
+        </div>
+      </section>
+
+      <section class="screen" id="s-play">
+        <div class="hud">
+          <div class="lvl" id="lvl"></div>
+          <div class="hud-r">
+            <span class="open" id="open"></span>
+            <div class="clock" id="clock"></div>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="board">
+            <svg class="lights" id="svg" viewBox="0 0 1000 620" aria-label="Fairy light dependency map"></svg>
+            <div class="page" id="page" role="alertdialog" aria-labelledby="pgTitle">
+              <div class="page-card">
+                <div class="page-strip"><span class="page-led"></span>PAGING YOU<span class="page-from">Pager Elf · now</span></div>
+                <div class="page-body">
+                  <div class="page-title" id="pgTitle"></div>
+                  <div class="page-desc" id="pgDesc"></div>
+                  <div class="page-stat" id="pgStat"></div>
+                  <button class="btn ack" id="ack">Acknowledge</button>
+                  <div class="page-hint">or press Enter · the clock starts when you ack</div>
+                </div>
+              </div>
+            </div>
+            <div class="overlay" id="ov">
+              <div class="status">
+                <div class="st-hd">North Pole status</div>
+                <div class="st-big"><i></i><span id="stBig">All systems operational</span></div>
+                <ul class="st-list" id="stList"></ul>
+                <div class="st-foot"><span id="stTime"></span><button class="btn" id="next">Next string</button></div>
+              </div>
+            </div>
+          </div>
+          <aside class="chan" aria-label="Incident channel"><div class="chan-in">
+            <div class="chan-hd"><span class="hash">#</span><span id="chanName">inc-fairy-lights</span><span class="sev" id="chanSev">SEV 1</span></div>
+            <div class="feed" id="feed" aria-live="polite"></div>
+          </div></aside>
+        </div>
+        <div class="hint">Red wires are tangled. Grab a service and drag it somewhere better.</div>
+      </section>
+
+      <section class="screen" id="s-done">
+        <div class="pm">
+          <div class="pm-kick">Postmortem</div>
+          <h2>Christmas Eve fairy lights outage</h2>
+          <dl style="margin:0">
+            <div class="pm-row"><dt>Time to resolve</dt><dd><span class="big" id="final"></span> seconds</dd></div>
+            <div class="pm-row"><dt>Impact</dt><dd id="pmImpact"></dd></div>
+            <div class="pm-row"><dt>Timeline</dt><dd id="pmTimeline"></dd></div>
+            <div class="pm-row"><dt>Root cause</dt><dd id="pmRoot"></dd></div>
+            <div class="pm-row"><dt>Follow-ups</dt><dd><ul id="pmFollow"></ul></dd></div>
+          </dl>
+        </div>
+        <div class="verdict" id="verdict"></div>
+        <div class="nl">
+          <h3>The nice list (<span id="count">0</span>)</h3>
+          <ol id="board"></ol>
+        </div>
+        <div class="center" style="margin-top:16px">
+          <button class="btn" id="again">Go back on call</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+  <p class="foot">Untangle the Fairy Lights &middot; a prototype</p>
+
+  <div class="modal-back" id="wipeBack" role="dialog" aria-modal="true" aria-label="Clear the leaderboard">
+    <div class="modal">
+      <p><b>Clear the nice list?</b> This wipes the Fairy Lights leaderboard for everyone and can't be undone.</p>
+      <p class="modal-err" id="wipeErr">Wrong password.</p>
+      <input type="password" id="wipePw" placeholder="password" autocomplete="off" aria-label="Password">
+      <div class="modal-row">
+        <button class="btn ghost" id="wipeCancel">Cancel</button>
+        <button class="btn" id="wipeOk">Clear it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // each string is built from N random lines: their crossing points become services and the
+  // segments between neighbouring crossings become wires. That's always solvable (planar).
+  const LEVELS = [
+    { lines:4, name:"The office tree" },
+    { lines:5, name:"The front window" },
+    { lines:6, name:"Nan's porch" },
+    { lines:7, name:"The big one from the loft" }
+  ];
+  const SERVICES = [
+    "sleigh-api","chimney-gw","nice-list-db","naughty-list","reindeer-sched","mince-pie-cache",
+    "present-queue","wrap-svc","route-planner","cookie-ingest","elf-auth","toy-factory",
+    "snow-cdn","carrot-store","stocking-svc","bell-notifier","gps-sync","toy-wiki",
+    "cocoa-pool","tinsel-proxy","sack-alloc","rudolph-led","chimney-dns","gift-tagger"
+  ];
+  const PEOPLE = {
+    bot:   ["🤖","Pager Elf"],
+    head:  ["🧝","Head Elf"],
+    santa: ["🎅","Santa"],
+    mrs:   ["🥧","Mrs Claus"],
+    you:   ["🙋","You"]
+  };
+  const ROOTS = [
+    "Kevin packed the lights away last January without a reel.",
+    "The cat used the lights as a toy for eleven months.",
+    "A 3am deploy of tinsel-proxy that nobody reviewed.",
+    "Someone stored the lights in the same box as the extension leads.",
+    "Grandad 'tidied' the loft.",
+    "The lights were used as a skipping rope at the summer party."
+  ];
+  const FOLLOWUPS = [
+    "Buy a cable reel (owner: Kevin)",
+    "Label the box FRAGILE: LIGHTS",
+    "Ban the cat from the loft",
+    "Add an alert for tangles before December",
+    "Write a runbook: how to put lights away",
+    "Move tinsel-proxy deploys out of Christmas Eve",
+    "Mince pies for whoever was on call"
+  ];
+  const COLS = ["#FFB547","#FF6B5E","#FFE3A3","#7DD39A","#7FB8FF","#FF8FC2"];
+  const W = 1000, H = 620, R = 15;
+  const PADX = 90, PADT = 44, PADB = 50;   // room for the service labels under each bulb
+  const KEY = "ctrlw.leaderboard.lights.v1";   // local mirror of the board (offline fallback)
+  const API = "/api/scores?board=lights";
+  const WIPE_PW = "tinsel";                     // secret reset: tap the title 5x, then this
+  const TOP_N = 10;
+  const NS = "http://www.w3.org/2000/svg";
+
+  const $ = id => document.getElementById(id);
+  const fmt = ms => (ms/1000).toFixed(2);
+  const pick = a => a[Math.floor(Math.random()*a.length)];
+  const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+  function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on")); $(id).classList.add("on"); }
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
+  function save(list){ try{ localStorage.setItem(KEY, JSON.stringify(list)); }catch(e){} }
+  function merge(a, b){
+    const seen = new Set(), out = [];
+    for(const e of a.concat(b)){
+      const k = e.at + "|" + e.who + "|" + e.ms;
+      if(seen.has(k)) continue; seen.add(k); out.push(e);
+    }
+    return out.sort((x,y)=>x.ms-y.ms).slice(0,50);
+  }
+  // cloud is best effort; local storage keeps the night going if the wifi drops
+  function syncDown(mine){
+    fetch(API + "&ts=" + Date.now(), {cache:"no-store"})
+      .then(r => r.ok ? r.json() : null)
+      .then(remote => { if(Array.isArray(remote)){ save(merge(remote, load())); paintBoard(mine || null); } })
+      .catch(()=>{});
+  }
+  function syncUp(entry){
+    fetch(API, { method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify(entry) })
+      .then(r => r.ok ? r.json() : null)
+      .then(remote => { if(Array.isArray(remote)){ save(merge(remote, load())); paintBoard(entry); } })
+      .catch(()=>{});
+  }
+  const BB = ["#E2A93B","#C9CED6","#C97B45"];
+  function row(e, rank, mine){
+    const me = mine && e.at === mine.at ? "me" : "";
+    const dot = rank <= 3 ? BB[rank-1] : rank % 2 ? "#C8323F" : "#3E8A5E";
+    return `<li class="${me}"><span class="rk">${rank}</span><span class="bb" style="background:${dot}"></span>
+      <span class="nm" title="${esc(e.who)}">${rank === 1 ? "👑 " : ""}${esc(e.who)}</span><span class="tm">${fmt(e.ms)}s</span></li>`;
+  }
+  function paintBoard(mine){
+    const list = load();
+    let html = list.length ? list.slice(0,TOP_N).map((e,i)=>row(e,i+1,mine)).join("") : '<li class="empty">Nobody has untangled anything yet.</li>';
+    if(mine){
+      const r = list.findIndex(e => e.at === mine.at);
+      if(r >= TOP_N) html += `<li class="gap" aria-hidden="true">· · ·</li>` + row(list[r], r+1, mine);
+    }
+    ["board","boardIn"].forEach(id => $(id).innerHTML = html);
+    ["count","countIn"].forEach(id => $(id).textContent = list.length);
+  }
+  function setClock(ms){
+    const t = fmt(ms), cut = t.length - 2;
+    $("clock").innerHTML = [...t].map((ch,i)=>`<span class="cd${ch==="."?" dot":i>=cut?" hs":""}">${ch}</span>`).join("");
+  }
+
+  let level = 0, nodes = [], edges = [], names = [], splits = [], lvlStart = 0, raf = null, solved = false;
+  let drag = null, solution = [], openSet = new Set(), peakOpen = 0, firstOpen = [], resolvedTotal = 0;
+  let cheered = {}, waiting = false;
+
+  /* ---------- puzzle generation ---------- */
+  function makeGraph(n){
+    const lines = [];
+    for(let i=0;i<n;i++){
+      const a = Math.random()*Math.PI;
+      lines.push({ px:Math.random(), py:Math.random(), dx:Math.cos(a), dy:Math.sin(a) });
+    }
+    const pts = [], onLine = lines.map(()=>[]);
+    for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
+      const A = lines[i], B = lines[j];
+      const den = A.dx*B.dy - A.dy*B.dx;
+      if(Math.abs(den) < 1e-3) return null;
+      const t = ((B.px-A.px)*B.dy - (B.py-A.py)*B.dx) / den;
+      const u = ((B.px-A.px)*A.dy - (B.py-A.py)*A.dx) / den;
+      const id = pts.length; pts.push({ x:A.px + t*A.dx, y:A.py + t*A.dy });
+      onLine[i].push([t,id]); onLine[j].push([u,id]);
+    }
+    const es = [];
+    onLine.forEach(list => { list.sort((a,b)=>a[0]-b[0]); for(let k=0;k<list.length-1;k++) es.push([list[k][1], list[k+1][1]]); });
+    return { count:pts.length, edges:es, sol:pts };
+  }
+
+  function buildLevel(){
+    let g = null;
+    while(!g) g = makeGraph(LEVELS[level].lines);
+    edges = g.edges; solution = g.sol;
+    names = shuffle(SERVICES.slice()).slice(0, g.count);
+    const order = shuffle([...Array(g.count).keys()]);
+    const cx = W/2, cy = (PADT + H - PADB)/2, rx = W/2 - PADX - 40, ry = (H - PADT - PADB)/2 - 10;
+    nodes = new Array(g.count);
+    order.forEach((id, k) => {
+      const a = k / g.count * Math.PI*2 - Math.PI/2;
+      nodes[id] = { x:cx + Math.cos(a)*rx, y:cy + Math.sin(a)*ry, c:COLS[id % COLS.length] };
+    });
+    if(tangle().total === 0) return buildLevel();
+  }
+
+  /* ---------- geometry ---------- */
+  function orient(a,b,c){ const v=(b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x); return v>1e-9?1:v<-1e-9?-1:0; }
+  function crosses(e,f){
+    if(e[0]===f[0]||e[0]===f[1]||e[1]===f[0]||e[1]===f[1]) return false;
+    const a=nodes[e[0]], b=nodes[e[1]], c=nodes[f[0]], d=nodes[f[1]];
+    return orient(a,b,c)*orient(a,b,d) < 0 && orient(c,d,a)*orient(c,d,b) < 0;
+  }
+  // a tangled wire = an open incident
+  function tangle(){
+    const bad = new Set(); let total = 0;
+    for(let i=0;i<edges.length;i++) for(let j=i+1;j<edges.length;j++)
+      if(crosses(edges[i],edges[j])){ total++; bad.add(i); bad.add(j); }
+    return { total, bad };
+  }
+
+  /* ---------- drawing ---------- */
+  function el(tag, attrs){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+  function drawBoard(){
+    const svg = $("svg"); svg.innerHTML = "";
+    const defs = el("defs",{}); defs.innerHTML = `<filter id="gl" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="9"/></filter>`;
+    svg.appendChild(defs);
+    const wires = el("g",{}); svg.appendChild(wires);
+    edges.forEach((e,i) => wires.appendChild(el("line",{class:"wire", id:"w"+i})));
+    const bulbs = el("g",{}); svg.appendChild(bulbs);
+    nodes.forEach((n,i) => {
+      const g = el("g",{class:"bulb", id:"b"+i});
+      g.style.setProperty("--d",(Math.random()*1.4).toFixed(2)+"s");
+      g.innerHTML = `
+        <circle class="glow" r="${R*2.1}" fill="${n.c}" filter="url(#gl)"/>
+        <rect x="-6" y="${-R-8}" width="12" height="9" rx="2" fill="#4A4038"/>
+        <ellipse class="glass" rx="${R*.82}" ry="${R}" fill="#5E6B64" stroke="rgba(0,0,0,.35)" stroke-width="1.5"/>
+        <ellipse rx="${R*.25}" ry="${R*.4}" cx="-4" cy="-4" fill="#fff" opacity=".45"/>
+        <text class="svc" y="${R+20}" text-anchor="middle">${names[i]}</text>
+        <circle r="${R*2}" fill="transparent"/>`;
+      bulbs.appendChild(g);
+    });
+    return update();
+  }
+  function update(){
+    edges.forEach((e,i) => {
+      const w=$("w"+i), a=nodes[e[0]], b=nodes[e[1]];
+      w.setAttribute("x1",a.x); w.setAttribute("y1",a.y); w.setAttribute("x2",b.x); w.setAttribute("y2",b.y);
+    });
+    nodes.forEach((n,i) => $("b"+i).setAttribute("transform",`translate(${n.x},${n.y})`));
+    const { total, bad } = tangle();
+    const sick = new Set();
+    edges.forEach((e,i) => { $("w"+i).classList.toggle("x", bad.has(i)); if(bad.has(i)){ sick.add(e[0]); sick.add(e[1]); } });
+    nodes.forEach((n,i) => {
+      const lit = !sick.has(i), g = $("b"+i);
+      g.classList.toggle("lit", lit);
+      g.querySelector(".glass").setAttribute("fill", lit ? n.c : "#5E6B64");
+    });
+    drawOpen(bad.size);
+    return { total, bad };
+  }
+  function drawOpen(n){
+    const o = $("open");
+    o.classList.toggle("done", n === 0);
+    o.innerHTML = `<span class="led"></span>` + (n === 0 ? "<b>0</b> open incidents" : `<b>${n}</b> open incident${n===1?"":"s"}`);
+    $("chanSev").textContent = n === 0 ? "RESOLVED" : n > edges.length/2 ? "SEV 1" : "SEV 2";
+    $("chanSev").classList.toggle("ok", n === 0);
+  }
+
+  /* ---------- the incident channel ---------- */
+  function stamp(){
+    const s = Math.floor((performance.now() - lvlStart)/1000);
+    return `23:${String(41 + Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+  }
+  let lastWho = null;
+  function post(who, html){
+    const p = PEOPLE[who];
+    const f = $("feed");
+    // same person posting again: add a line under their last message instead of a new block
+    if(who === lastWho && f.lastElementChild){
+      const txt = f.lastElementChild.querySelector(".txt");
+      txt.insertAdjacentHTML("beforeend", `<span class="ln">${html}</span>`);
+      while(txt.children.length > 4) txt.removeChild(txt.firstElementChild);
+      f.scrollTop = f.scrollHeight;
+      return;
+    }
+    lastWho = who;
+    const m = document.createElement("div");
+    m.className = "msg";
+    m.innerHTML = `<div class="av">${p[0]}</div><div><div class="who">${p[1]}<span class="when">${stamp()}</span></div><div class="txt"><span class="ln">${html}</span></div></div>`;
+    f.appendChild(m);
+    while(f.children.length > 12) f.removeChild(f.firstChild);
+    f.scrollTop = f.scrollHeight;
+  }
+  const svc = id => `<code>${esc(names[id])}</code>`;
+  // after each drop, Pager Elf posts one short line: what got better, what got worse, what's left
+  function report(bad){
+    const now = new Set(bad);
+    const fixed = [...openSet].filter(i => !now.has(i));
+    const broke = [...now].filter(i => !openSet.has(i));
+    openSet = now;
+    resolvedTotal += fixed.length;
+    if(fixed.length || broke.length){
+      const bits = [];
+      if(fixed.length) bits.push(fixed.length === 1
+        ? `<span class="g">✓</span> ${svc(edges[fixed[0]][0])} recovered`
+        : `<span class="g">✓ ${fixed.length} recovered</span>`);
+      if(broke.length) bits.push(broke.length === 1
+        ? `<span class="r">●</span> ${svc(edges[broke[0]][0])} tangled`
+        : `<span class="r">● ${broke.length} newly tangled</span>`);
+      bits.push(`<span class="open-n">${now.size} open</span>`);
+      post("bot", bits.join(" · "));
+    }
+    // a little colour from the North Pole as things improve
+    const n = now.size, start = firstOpen[level];
+    if(n > 0 && n <= start/2 && !cheered.half){ cheered.half = true; post("head", "Halfway there. The workshop lights just flickered back on 👀"); }
+    if(n === 1 && !cheered.one){ cheered.one = true; post("santa", "One more and I can see the chimney. No pressure."); }
+    if(broke.length >= 3 && !cheered.worse){ cheered.worse = true; post("mrs", "Did someone just make it worse? 🙃"); }
+  }
+
+  /* ---------- flow ---------- */
+  const done = () => splits.reduce((a,b)=>a+b, 0);
+  let player = "Anonymous";
+  function begin(){
+    const raw = $("who").value.trim().replace(/\s+/g," ");
+    player = raw ? raw.slice(0,28) : "Anonymous";
+    level = 0; splits = []; firstOpen = []; resolvedTotal = 0; peakOpen = 0;
+    show("s-play");
+    const tick = () => { if(!solved && !waiting) setClock(done() + performance.now() - lvlStart); raf = requestAnimationFrame(tick); };
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
+    startLevel();
+  }
+  function startLevel(){
+    solved = false; cheered = {};
+    $("ov").classList.remove("on");
+    $("lvl").innerHTML = `String ${level+1} of ${LEVELS.length}<small>${LEVELS[level].name}</small>`;
+    const inc = 2512 + level;
+    $("chanName").textContent = `inc-${inc}-fairy-lights`;
+    $("feed").innerHTML = "";
+    lastWho = null;
+    buildLevel();
+    lvlStart = performance.now();
+    const { bad } = drawBoard();
+    openSet = new Set(bad);
+    firstOpen[level] = bad.size;
+    peakOpen = Math.max(peakOpen, bad.size);
+    setClock(done());
+    // page the player; nothing (including the clock) starts until they acknowledge
+    waiting = true;
+    $("pgTitle").textContent = `INC-${inc} declared`;
+    $("pgDesc").textContent = `${LEVELS[level].name}: the lights are down.`;
+    $("pgStat").textContent = `${bad.size} wires tangled across ${nodes.length} services`;
+    $("open").innerHTML = `<span class="led"></span><b>${bad.size}</b> open incidents`;
+    $("page").classList.add("on");
+    setTimeout(()=>$("ack").focus(), 60);
+  }
+
+  function ack(){
+    if(!waiting) return;
+    waiting = false;
+    $("page").classList.remove("on");
+    lvlStart = performance.now();
+    const inc = 2512 + level, n = openSet.size;
+    post("bot", `🚨 <b>INC-${inc} declared</b>: ${esc(LEVELS[level].name)}, the lights are down. <span class="r">${n} wires tangled</span> across ${nodes.length} services.`);
+    post("you", pick(["Ack. On it 👀", "Acked. Grabbing the stepladder.", "On it. Nobody touch the plug.", "Ack. Putting the kettle on first."]));
+    if(level === 0) post("santa", "Thank you. Kind of a big night for us.");
+    if(level === 3) post("head", "This is the one from the loft. Godspeed.");
+  }
+  function win(){
+    solved = true;
+    splits.push(performance.now() - lvlStart);
+    setClock(done());
+    document.querySelectorAll(".wire").forEach(w => w.classList.add("win"));
+    document.querySelectorAll(".bulb").forEach(b => b.classList.add("twinkle"));
+    post("bot", `✅ <b>INC-${2512+level} resolved</b> in ${fmt(splits[level])}s. All ${nodes.length} services healthy.`);
+    // status page: tick a handful of services green one after another
+    const shown = names.slice(0, Math.min(5, names.length));
+    $("stList").innerHTML = shown.map((n,i)=>`<li><code>${esc(n)}</code><span class="st" id="st${i}">Degraded</span></li>`).join("");
+    $("stBig").textContent = "All systems operational";
+    $("stTime").textContent = `${LEVELS[level].name} · ${fmt(splits[level])}s`;
+    const last = level === LEVELS.length - 1;
+    $("next").textContent = last ? "Write the postmortem" : "Next string";
+    setTimeout(()=>{
+      $("ov").classList.add("on");
+      shown.forEach((_,i)=>setTimeout(()=>{ const s=$("st"+i); if(s){ s.textContent="Operational"; s.classList.add("ok"); } }, 250 + i*180));
+      setTimeout(()=>$("next").focus(), 250);
+    }, 700);
+  }
+  function next(){
+    if(level === LEVELS.length - 1) return finish();
+    level++; startLevel();
+  }
+  function finish(){
+    cancelAnimationFrame(raf);
+    const total = done();
+    $("final").textContent = fmt(total);
+    const svcs = LEVELS.reduce((a,l)=>a + l.lines*(l.lines-1)/2, 0);
+    $("pmImpact").innerHTML = `${svcs} services across 4 strings of lights. At worst, <b>${peakOpen}</b> wires were tangled at once.`;
+    $("pmTimeline").innerHTML = splits.map((s,i)=>`${esc(LEVELS[i].name)}: <b>${fmt(s)}s</b>`).join("<br>");
+    $("pmRoot").textContent = pick(ROOTS);
+    $("pmFollow").innerHTML = shuffle(FOLLOWUPS.slice()).slice(0,3).map(f=>`<li>${esc(f)}</li>`).join("");
+    const entry = { who: player, ms: Math.round(total), at: Date.now() };
+    const list = load(); list.push(entry); list.sort((a,b)=>a.ms-b.ms); save(list.slice(0,50));
+    const rank = list.findIndex(e => e.at === entry.at) + 1, n = list.length;
+    $("verdict").textContent =
+      n === 1   ? "First one on call tonight. Christmas is saved." :
+      rank === 1 ? "Top of the nice list! Santa owes you a mince pie." :
+      rank <= Math.ceil(n/3) ? "Elf-grade incident response." :
+      rank <= Math.ceil(2*n/3) ? "Every light is on. Not the fastest, but Christmas is saved." :
+                                 "The lights are on… eventually. Nan is still proud.";
+    paintBoard(entry);
+    syncUp(entry);
+    show("s-done"); $("again").focus();
+  }
+
+  /* ---------- dragging (mouse + touch) ---------- */
+  function svgPoint(evt){
+    const svg=$("svg"), pt=svg.createSVGPoint(); pt.x=evt.clientX; pt.y=evt.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+  $("svg").addEventListener("pointerdown", e => {
+    if(solved || waiting) return;
+    const g = e.target.closest(".bulb"); if(!g) return;
+    const i = +g.id.slice(1), p = svgPoint(e);
+    drag = { i, dx:nodes[i].x - p.x, dy:nodes[i].y - p.y, g };
+    g.classList.add("drag"); g.parentNode.appendChild(g);
+    $("svg").setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  $("svg").addEventListener("pointermove", e => {
+    if(!drag) return;
+    const p = svgPoint(e);
+    nodes[drag.i].x = Math.max(PADX, Math.min(W-PADX, p.x + drag.dx));
+    nodes[drag.i].y = Math.max(PADT, Math.min(H-PADB, p.y + drag.dy));
+    update();
+  });
+  function endDrag(){
+    if(!drag) return;
+    drag.g.classList.remove("drag"); drag = null;
+    const { total, bad } = update();
+    report(bad);
+    if(total === 0 && !solved) win();
+  }
+  $("svg").addEventListener("pointerup", endDrag);
+  $("svg").addEventListener("pointercancel", endDrag);
+
+  $("start").addEventListener("click", begin);
+  $("next").addEventListener("click", next);
+  $("ack").addEventListener("click", ack);
+  document.addEventListener("keydown", e => {
+    if(waiting && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); ack(); }
+  });
+  // stop the Enter here, or it would also ack the page that begin() just opened
+  $("who").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); e.stopPropagation(); begin(); } });
+  function toStart(){
+    $("who").value = "";
+    show("s-start");
+    paintBoard(null); syncDown(null);
+    setTimeout(()=>$("who").focus(), 40);
+  }
+  $("again").addEventListener("click", toStart);
+
+  // secret reset: tap the title 5 times, then the password
+  let taps = 0, tapT = null;
+  function tap(){
+    taps++; clearTimeout(tapT); tapT = setTimeout(()=>{ taps = 0; }, 1200);
+    if(taps >= 5){ taps = 0; $("wipePw").value = ""; $("wipeErr").classList.remove("on"); $("wipeBack").classList.add("on"); setTimeout(()=>$("wipePw").focus(), 40); }
+  }
+  $("logo").addEventListener("click", tap);
+  function closeWipe(){ $("wipeBack").classList.remove("on"); }
+  function doWipe(){
+    if($("wipePw").value !== WIPE_PW){ $("wipeErr").classList.add("on"); $("wipePw").select(); return; }
+    save([]); fetch(API, {method:"DELETE"}).catch(()=>{});
+    paintBoard(null); closeWipe();
+  }
+  $("wipeOk").addEventListener("click", doWipe);
+  $("wipeCancel").addEventListener("click", closeWipe);
+  $("wipePw").addEventListener("keydown", e => { if(e.key === "Enter") doWipe(); else if(e.key === "Escape") closeWipe(); });
+
+  setClock(0);
+  toStart();
+
+  // test hook: snap every service to an untangled layout (any affine squash of the solution stays untangled)
+  window.__lights = {
+    solve(){
+      const xs=solution.map(p=>p.x), ys=solution.map(p=>p.y);
+      const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+      nodes.forEach((n,i)=>{
+        n.x = PADX + (solution[i].x-x0)/(x1-x0||1)*(W-2*PADX);
+        n.y = PADT + (solution[i].y-y0)/(y1-y0||1)*(H-PADT-PADB);
+      });
+      return update().total;
+    }
+  };
+})();
+</script>
+</body>
+</html>

@@ -126,3 +126,17 @@ not real security.)
 `--pink #EA63CF`, `--pink-lite #FDA8FC`, `--purple #A579E4`, `--purple-lite #C9AEF2`,
 backgrounds `--bg-1 #281A54` / `--bg-2 #0D0A28`. MSN green `#7BC043` is still used for
 "online"/sent states.
+
+## Untangle the Fairy Lights (`lights.html`, prototype)
+- Separate page at `/lights` (rewrite in `vercel.json`) or `/lights.html`. A planarity puzzle
+  styled as an incident: bulbs are North Pole services, every tangled wire is an open
+  incident, a fake incident channel reports each drag, a pager card must be acked before each
+  of the 4 strings (the clock waits), a status page appears on each solve, and a silly
+  postmortem at the end.
+- Levels are random line arrangements (4–7 lines → 6–21 bulbs), so they're always solvable.
+  They're **not seeded yet**, so different players get different puzzles.
+- Leaderboard: name entry on the start screen, scores via `/api/scores?board=lights`
+  (`leaderboard-lights.json`), with a local mirror at `ctrlw.leaderboard.lights.v1`.
+- Secret reset: tap the "Untangle the Fairy Lights" title 5 times, password **`tinsel`**.
+- `window.__lights.solve()` is a test hook that snaps every bulb to a solved layout.
+- `triage.html` (Workshop Triage) is an earlier prototype; it isn't linked from anywhere.
