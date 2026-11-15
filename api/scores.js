@@ -1,16 +1,25 @@
 import { put, get } from '@vercel/blob';
 
-const KEY = 'leaderboard.json';
+// One blob per themed event. y2k keeps the original key so existing scores stay put.
+const BOARDS = {
+  y2k: 'leaderboard.json',
+  xmas: 'leaderboard-xmas.json',
+};
 const MAX = 50;
 
-async function readBoard() {
+function boardKey(req) {
+  const name = String(req.query?.board ?? 'y2k');
+  return BOARDS[name] || BOARDS.y2k;
+}
+
+async function readBoard(KEY) {
   const res = await get(KEY, { access: 'private', useCache: false });
   if (!res || !res.stream) return [];
   const data = await new Response(res.stream).json();
   return Array.isArray(data) ? data : [];
 }
 
-async function writeBoard(board) {
+async function writeBoard(KEY, board) {
   await put(KEY, JSON.stringify(board), {
     access: 'private',
     contentType: 'application/json',
@@ -31,9 +40,10 @@ function clean(e) {
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
+  const KEY = boardKey(req);
   try {
     if (req.method === 'GET') {
-      return res.status(200).json(await readBoard());
+      return res.status(200).json(await readBoard(KEY));
     }
     if (req.method === 'POST') {
       let body = req.body;
@@ -43,15 +53,15 @@ export default async function handler(req, res) {
       const entry = clean(body);
       if (!entry) return res.status(400).json({ error: 'bad entry' });
 
-      const board = await readBoard();
+      const board = await readBoard(KEY);
       board.push(entry);
       board.sort((a, b) => a.ms - b.ms);
       const trimmed = board.slice(0, MAX);
-      await writeBoard(trimmed);
+      await writeBoard(KEY, trimmed);
       return res.status(200).json(trimmed);
     }
     if (req.method === 'DELETE') {
-      await writeBoard([]);
+      await writeBoard(KEY, []);
       return res.status(200).json([]);
     }
     res.setHeader('Allow', 'GET, POST, DELETE');

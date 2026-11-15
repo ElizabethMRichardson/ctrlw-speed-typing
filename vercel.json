@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/board", "destination": "/index.html" },
+    { "source": "/xmas", "destination": "/index.html" },
+    { "source": "/xmas/board", "destination": "/index.html" },
+    { "source": "/christmas", "destination": "/index.html" },
+    { "source": "/christmas/board", "destination": "/index.html" }
+  ]
+}

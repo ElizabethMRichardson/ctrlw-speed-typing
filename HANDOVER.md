@@ -82,6 +82,46 @@ not real security.)
   live board right now.
 - Optionally change `WIPE_PW` from `dialup` and re-deploy.
 
+## Themes (Y2K + Christmas)
+- Same `index.html`, two themes. `/` is **Y2K** (unchanged). `/xmas`, `/christmas` or
+  `?theme=xmas` is **Christmas**. A tiny script in `<head>` sets `html[data-theme]` before
+  first paint. `vercel.json` rewrites `/xmas` and `/christmas` to `index.html`.
+- All per-theme copy/content lives in `THEMES` in the `<script>` (pools, contacts, verdicts,
+  name hints, tagline, prize line, footer, wipe password, localStorage key). Christmas pools
+  are `XMAS_POOLS` and follow the same keyboard rule.
+- The Christmas event is called **Ho Ho Hotkeys** and has a cosy look, not the Windows one.
+  Its CSS is everything under `html[data-theme="xmas"]`: cream card, knitted-jumper band
+  where the titlebar was (menubar hidden), warm fairy lights, a fireside glow with soft snow
+  (hidden under reduced motion), and a wordmark built in HTML ("Ho Ho" plus snowy keycaps,
+  `.xmark`). There's no logo image. Google Fonts (Fraunces, Nunito, Caveat, Courier Prime)
+  load only for this theme, with system fallbacks if the wifi is down.
+- Christmas content uses its own round order (`sequence` in `THEMES.xmas`):
+  terminal commands → Grandad on caps lock → code snippets → North Pole incident update →
+  out-of-office reply → over-decorated sparkle finale (pools `term`, `caps`, `code`,
+  `inc`, `ooo`, `deco` in `XMAS_POOLS`). That's 6 rounds, same as Y2K. Contacts are family and North Pole characters
+  with emoji avatars. The leaderboard is "The nice list", with bauble icons.
+- The secret wipe still works by tapping the holly icon (top left) 5 times.
+
+### Christmas-only gameplay extras
+- **Coal:** each slip (a wrong character typed onto an otherwise-correct line) adds
+  `COAL_MS` = 300ms. Carrying on past an existing mistake doesn't add more, and backspacing
+  is free. Each lump drops onto a coal pile under the input with a "+0.3s" pop, and a tally
+  sits beside it. The live clock and the stored score both include coal, and the end screen
+  shows the pile again.
+- **Snow buildup:** pause for `SNOW_AFTER_MS` (0.9s) after the clock has started and snow
+  settles on one untyped letter every `SNOW_EVERY_MS` (0.3s), dimming it and growing a drift.
+  Any keystroke shakes it all off. Visual pressure only, no time added.
+- **Cracker:** on the end screen, tap it for a joke (`JOKES`). If you're #1 you also get the
+  paper crown, and #1 on the board wears a crown.
+- **Big-screen board:** `/xmas/board` (or `/board` for Y2K, or `?view=board`). Just the
+  leaderboard, polling the API every 5s, with a confetti fanfare whenever #1 changes hands.
+  Locally there's no API, but a game tab in the same browser updates it instantly through the
+  `storage` event.
+- **Separate leaderboards:** the client calls `/api/scores?board=<theme>`. `y2k` →
+  `leaderboard.json` (original), `xmas` → `leaderboard-xmas.json`. Local mirror keys are
+  `ctrlw.leaderboard.v1` and `ctrlw.leaderboard.xmas.v1`. The secret wipe only clears the
+  board for the theme you're on. Christmas wipe password: **`mistletoe`**.
+
 ## Palette (matched to the logo)
 `--pink #EA63CF`, `--pink-lite #FDA8FC`, `--purple #A579E4`, `--purple-lite #C9AEF2`,
 backgrounds `--bg-1 #281A54` / `--bg-2 #0D0A28`. MSN green `#7BC043` is still used for
